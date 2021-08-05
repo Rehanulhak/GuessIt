@@ -17,10 +17,12 @@
 package com.example.android.guesstheword.screens.game
 
 import android.os.Bundle
+import android.text.format.DateUtils
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
@@ -63,6 +65,22 @@ class GameFragment : Fragment() {
         })
         viewModel.score.observe(viewLifecycleOwner, Observer { newScore ->
             binding.scoreText.text = newScore.toString()
+        })
+        viewModel.gameFinished.observe(viewLifecycleOwner, Observer { hasFinished ->
+            if (hasFinished) {
+                gameFinished()
+                viewModel.onGameFinished()
+            }
+        })
+        viewModel.currentTime.observe(viewLifecycleOwner, Observer { newTime ->
+            binding.timerText.text = DateUtils.formatElapsedTime(newTime) })
+        viewModel.eventGameFinish.observe(viewLifecycleOwner, Observer { isFinished ->
+            if (isFinished) {
+                val currentScore = viewModel.score.value ?: 0
+                val action = GameFragmentDirections.actionGameToScore(currentScore)
+                findNavController(this).navigate(action)
+                viewModel.onGameFinished()
+            }
         })
 
         return binding.root
